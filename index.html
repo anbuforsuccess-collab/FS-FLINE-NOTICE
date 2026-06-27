@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
+<title>F-Line புல எல்லை அளவை அறிவிப்பு</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&family=Noto+Sans+Tamil:wght@400;700&display=swap" rel="stylesheet">
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+body{
+    background:#cfcfcf;
+    font-family:"Noto Sans Tamil", Arial, sans-serif;
+}
+.toolbar{
+    width:210mm;
+    margin:10px auto;
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+}
+.toolbar button {
+    padding:8px 15px;
+    font-size:15px;
+    cursor:pointer;
+    background:#fff;
+    border:1px solid #999;
+    border-radius:4px;
+    font-weight:bold;
+}
+.toolbar button:hover {
+    background:#eee;
+}
+.page{
+    width:210mm;
+    height:297mm;
+    background:white;
+    margin:auto;
+    padding:18mm 18mm 12mm 18mm;
+    box-shadow:0 0 10px rgba(0,0,0,.25);
+    overflow:hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+.header{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    margin-bottom:20px;
+}
+.left, .right{
+    font-size:16.5px;
+    font-weight:bold;
+    line-height:1.4;
+}
+.right{
+    text-align:right;
+}
+.title{
+    text-align:center;
+    margin-bottom:20px;
+}
+.title h2{
+    display:inline-block;
+    border-bottom:2px solid #000;
+    padding-bottom:4px;
+    font-size:22px;
+}
+.notice{
+    font-size:16.5px;
+    line-height:1.8; 
+    text-align: justify;
+    text-justify: inter-word;
+    word-break: keep-all;
+    color: #000;
+}
+.write{
+    border:none;
+    outline:none;
+    background:transparent;
+    font-size:17px;
+    font-weight:600;
+    color:#000;
+    font-family:"Kalam", "Noto Sans Tamil", cursive;
+    padding:0 2px;
+    margin:0;
+    border-bottom:1px dashed #777;
+    text-align: center;
+    vertical-align: middle;
+}
+.write:focus{
+    border-bottom: 1px solid #000;
+}
+.editable-span {
+    display: inline-block;
+    min-width: 150px;
+    max-width: 100%;
+    border-bottom: 1px dashed #777;
+    outline: none;
+    font-size: 17px;
+    font-weight: 600;
+    font-family: "Kalam", "Noto Sans Tamil", cursive;
+    color: #000;
+    text-align: center;
+    vertical-align: middle;
+    word-wrap: break-word;
+    white-space: normal;
+    padding: 0 4px;
+}
+.editable-span:focus {
+    border-bottom: 1px solid #000;
+}
+.office-input {
+    font-family: "Noto Sans Tamil", Arial, sans-serif;
+    font-size: 16.5px;
+    font-weight: bold;
+    text-align: right;
+    width: 150px;
+    border-bottom: 1px dashed #777;
+}
+.office-input:focus {
+    border-bottom: 1px solid #000;
+}
+
+.input-picker-wrapper {
+    position: relative;
+    display: inline-block;
+    vertical-align: middle;
+}
+.native-picker {
+    position: absolute;
+    left: 0; top: 0; width: 100%; height: 100%;
+    opacity: 0; 
+    cursor: pointer;
+    z-index: 2;
+}
+.custom-display-input {
+    font-family: Arial, sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    color: #000;
+    border: none;
+    background: transparent;
+    border-bottom: 1px dashed #777;
+    text-align: center;
+    padding: 0 2px;
+    pointer-events: none; 
+    vertical-align: middle;
+    height: 24px;
+}
+
+select.write {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    cursor: pointer;
+    text-align-last: center;
+    padding: 0 4px;
+    height: 24px;
+}
+.signature-row {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 20px;
+}
+.sig-box {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 220px;
+    font-size: 16px;
+}
+.sig-btn {
+    padding: 5px 10px;
+    font-size: 12px;
+    cursor: pointer;
+    background: #fbfbfb;
+    border: 1px dashed #555;
+    margin-top: 5px;
+    font-weight: bold;
+}
+#sigPreview {
+    max-width: 100%;
+    max-height: 75px; 
+    display: none;
+    margin-top: 5px;
+    cursor: pointer; 
+}
+.desig-title {
+    margin-top: 5px;
+    font-weight: bold;
+    font-size: 16px;
+}
+.recipient-row {
+    width: 100%;
+    text-align: left;
+    margin-top: 15px;
+    font-size: 15.5px;
+    line-height: 1.5;
+}
+.pattadhar-empty-space {
+    margin-top: 10px;
+    width: 100%;
+    height: 90px;
+    background: transparent;
+}
+
+/* ஃபுல் ஸ்கிரீன் சிக்னேச்சர் பேட் பாப்-அப் */
+.sig-modal {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.85);
+    z-index: 10000;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 15px;
+}
+.modal-content {
+    background: white;
+    width: 100%;
+    max-width: 600px;
+    border-radius: 8px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+}
+.modal-header {
+    background: #ebeeef;
+    padding: 12px;
+    text-align: center;
+    font-weight: bold;
+    border-bottom: 1px solid #ccc;
+    font-size: 16px;
+}
+#modalCanvas {
+    background: #ffffff;
+    width: 100%;
+    height: 320px;
+    touch-action: none;
+}
+.modal-footer {
+    display: flex;
+    background: #f5f5f5;
+    border-top: 1px solid #ddd;
+}
+.modal-footer button {
+    flex: 1;
+    padding: 16px;
+    font-size: 16px;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+}
+.btn-clear { background: #ffdddd; color: #cc0000; }
+.btn-save { background: #ddffdd; color: #008800; border-left: 1px solid #ddd !important; }
+
+@media print{
+    body{ background:white; }
+    .toolbar, .sig-btn, .sig-modal, .native-picker { display:none !important; }
+    .page{ margin:0; box-shadow:none; height: 297mm; padding: 15mm 18mm; }
+    .write, .office-input, .editable-span, .custom-display-input { border-bottom: none; }
+    select.write { appearance: none; background: transparent; }
+}
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+    <button onclick="window.print()">PDF Download</button>
+    <button onclick="clearForm()">Clear All</button>
+</div>
+
+<div class="page">
+    <div>
+        <div class="header">
+            <div class="left">
+                FLA/RTR/OPT No.
+                <input class="write" id="fileno" style="width:120px;" placeholder=".............">
+            </div>
+            <div class="right">
+                வட்டாட்சியர் அலுவலகம்<br>
+                <input class="write office-input" id="office_district" placeholder="வட்டம் தட்டச்சு செய்க">
+            </div>
+        </div>
+
+        <div class="title">
+            <h2>தகவல் அறிவிப்பு</h2>
+        </div>
+
+        <div class="notice">
+            மனுதாரர் திரு / திருமதி 
+            <input class="write" id="name" style="width:220px;" placeholder=".........................................."> 
+            என்பவர் 
+            <span class="editable-span" id="village1" contenteditable="true" placeholder="................................"></span> 
+            கிராமத்தில், புல எண்: <input class="write" id="survey_no" style="width:120px;" placeholder="..................."> 
+            இல் <b>நான்கெல்லை / உட்பிரிவுக்கு</b> அளக்க மனு செய்துள்ளார். 
+
+            மேற்படி மனுவின் மீது நடவடிக்கையாக 
+            
+            <div class="input-picker-wrapper">
+                <input type="date" id="nativeDate" class="native-picker" onchange="formatDateOutput()">
+                <input type="text" id="dateDisplay" class="custom-display-input" style="width:115px;">
+            </div>
+            ஆம் தேதி 
+            
+            <select id="session" class="write">
+                <option value="முற்பகல்">முற்பகல்</option>
+                <option value="பிற்பகல்">பிற்பகல்</option>
+            </select> 
+            
+            <div class="input-picker-wrapper">
+                <input type="time" id="nativeTime" class="native-picker" onchange="formatTimeOutput()">
+                <input type="text" id="timeDisplay" class="custom-display-input" style="width:60px;">
+            </div>
+            மணிக்கு 
+            
+            <select id="officer" class="write" onchange="syncDesignation()">
+                <option value="சார் ஆய்வாளர்">சார் ஆய்வாளர்</option>
+                <option value="குறுவட்ட அளவர்">குறுவட்ட அளவர்</option>
+                <option value="நில அளவர்">நில அளவர்</option>
+            </select> 
+            புல தணிக்கை செய்து அளவு செய்ய உள்ளார். 
+
+            ஆகையால் அச்சமயம் மனுதாரர் மற்றும் பக்கத்து நிலத்துக்காரர்கள் தகுந்த உரிமை நிலைநாட்டும் ஆவணங்களுடன் 
+            தொடர்புடைய கிராம நிர்வாக அலுவலகத்தில் ஆஜராக கேட்டுக்கொள்ளப்படுகிறார்கள். 
+
+            மனுதாரர் ஆஜராக தவறினால் மனு மேல் நடவடிக்கை இன்றி முடிவு செய்ய பரிந்துரை செய்யப்படும். 
+
+            பக்கத்து நிலத்துக்காரர்கள் ஆஜராகாத பட்சத்தில் புலப்படத்தில் உள்ள அளவுகளின் படி நில எல்லை நிர்ணயம் செய்யப்பட்டு கைவசம் உள்ள அரசு ஆவணங்களின்படி முடிவு செய்யப்படும் என தெரிவிக்கப்படுகிறது. 
+
+            மேலும் புலத்தில் நீதிமன்ற உத்தரவு அல்லது வழக்கு நிலுவை ஏதும் இருப்பின் நில அளவைக்கு முன் தெரிவிக்க வேண்டும். 
+
+            புலத்தில் முட்புதர்கள் இருப்பின் சுத்தம் செய்யப்பட்டு இருக்க வேண்டும். 
+
+            இவ்வறிவிப்பு உயர் அதிகாரிகளின் உத்தரவுக்கு ஏற்ப மாறுதலுக்கு உட்பட்டது.
+        </div>
+    </div>
+
+    <div class="signature-row">
+        <div class="sig-box">
+            இப்படிக்கு<br>
+            <button class="sig-btn" id="openSigBtn" onclick="openSignatureModal()">Click to Sign</button>
+            <img id="sigPreview" alt="Signature" title="கையொப்பத்தை மாற்ற கிளிக் செய்யவும்" onclick="openSignatureModal()">
+            <div class="desig-title" id="footerDesignation">சார் ஆய்வாளர்</div>
+        </div>
+    </div>
+
+    <div class="recipient-row">
+        <b>பெறுநர்:</b><br>
+        1. கிராம நிர்வாக அலுவலர்<br>
+        2. தொடர்புடைய நான்கு எல்லை பட்டாதாரர்கள்:<br>
+        <div class="pattadhar-empty-space"></div>
+    </div>
+</div>
+
+<div class="sig-modal" id="signatureModal">
+    <div class="modal-content">
+        <div class="modal-header">டிஜிட்டல் கையொப்பம் (ஃபுல் ஸ்கிரீன்)</div>
+        <canvas id="modalCanvas"></canvas>
+        <div class="modal-footer">
+            <button class="btn-clear" onclick="clearModalCanvas()">Clear</button>
+            <button class="btn-save" onclick="saveSignature()">Save</button>
+        </div>
+    </div>
+</div>
+
+<script>
+const modal = document.getElementById("signatureModal");
+const canvas = document.getElementById("modalCanvas");
+const ctx = canvas.getContext("2d");
+const sigPreview = document.getElementById("sigPreview");
+const openSigBtn = document.getElementById("openSigBtn");
+
+let isDrawing = false;
+let lastX = 0;
+let lastY = 0;
+
+function openSignatureModal() {
+    modal.style.display = "flex";
+    canvas.width = canvas.offsetWidth;
+    canvas.height = 320; 
+    ctx.lineWidth = 4;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    ctx.strokeStyle = "#000000";
+}
+
+function getCoordinates(e) {
+    const rect = canvas.getBoundingClientRect();
+    if (e.touches && e.touches.length > 0) {
+        return {
+            x: e.touches[0].clientX - rect.left,
+            y: e.touches[0].clientY - rect.top
+        };
+    }
+    return {
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top
+    };
+}
+
+function startDraw(e) {
+    isDrawing = true;
+    const coords = getCoordinates(e);
+    lastX = coords.x;
+    lastY = coords.y;
+    ctx.beginPath();
+    ctx.moveTo(lastX, lastY);
+}
+
+function doDraw(e) {
+    if (!isDrawing) return;
+    if (e.cancelable) e.preventDefault(); 
+    const coords = getCoordinates(e);
+    ctx.lineTo(coords.x, coords.y);
+    ctx.stroke();
+    lastX = coords.x;
+    lastY = coords.y;
+}
+
+function stopDraw() {
+    isDrawing = false;
+}
+
+canvas.addEventListener('touchstart', startDraw, { passive: false });
+canvas.addEventListener('touchmove', doDraw, { passive: false });
+canvas.addEventListener('touchend', stopDraw);
+canvas.addEventListener('touchcancel', stopDraw);
+canvas.addEventListener('mousedown', startDraw);
+canvas.addEventListener('mousemove', doDraw);
+canvas.addEventListener('mouseup', stopDraw);
+canvas.addEventListener('mouseleave', stopDraw);
+
+function clearModalCanvas() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+}
+
+function saveSignature() {
+    const blank = document.createElement('canvas');
+    blank.width = canvas.width;
+    blank.height = canvas.height;
+    
+    if (canvas.toDataURL() === blank.toDataURL()) {
+        alert("தயவுசெய்து கையொப்பமிட்ட பின் Save செய்யவும்!");
+        return;
+    }
+
+    const dataURL = canvas.toDataURL();
+    sigPreview.src = dataURL;
+    sigPreview.style.display = "block";
+    openSigBtn.style.display = "none"; 
+    modal.style.display = "none"; 
+}
+
+function syncDesignation() {
+    const selectBox = document.getElementById("officer");
+    const footerTitle = document.getElementById("footerDesignation");
+    footerTitle.innerText = selectBox.value;
+}
+
+function formatDateOutput() {
+    const nativeDate = document.getElementById("nativeDate").value;
+    const dateDisplay = document.getElementById("dateDisplay");
+    if (nativeDate) {
+        const parts = nativeDate.split("-"); 
+        dateDisplay.value = parts[2] + "-" + parts[1] + "-" + parts[0];
+    }
+}
+
+function formatTimeOutput() {
+    const nativeTime = document.getElementById("nativeTime").value;
+    const timeDisplay = document.getElementById("timeDisplay");
+    if (nativeTime) {
+        const parts = nativeTime.split(":"); 
+        let hours = parseInt(parts[0]);
+        let minutes = parts[1];
+        
+        const sessionSelect = document.getElementById("session");
+        if (hours >= 12) {
+            sessionSelect.value = "பிற்பகல்";
+            if (hours > 12) hours = hours - 12;
+        } else {
+            sessionSelect.value = "முற்பகல்";
+            if (hours === 0) hours = 12;
+        }
+        
+        let displayHours = String(hours).padStart(2, '0');
+        timeDisplay.value = displayHours + ":" + minutes;
+    }
+}
+
+function clearForm() {
+    document.getElementById("fileno").value = "";
+    document.getElementById("name").value = "";
+    document.getElementById("village1").innerText = ""; 
+    document.getElementById("survey_no").value = ""; 
+    document.getElementById("office_district").value = "";
+    document.getElementById("officer").selectedIndex = 0;
+    document.getElementById("session").selectedIndex = 0;
+    
+    sigPreview.src = "";
+    sigPreview.style.display = "none";
+    openSigBtn.style.display = "block";
+    
+    syncDesignation();
+    setCurrentDateTime();
+}
+
+function setCurrentDateTime() {
+    let t = new Date();
+    let dd = String(t.getDate()).padStart(2, '0');
+    let mm = String(t.getMonth() + 1).padStart(2, '0');
+    let yy = t.getFullYear();
+    
+    document.getElementById("nativeDate").value = yy + "-" + mm + "-" + dd;
+    document.getElementById("dateDisplay").value = dd + "-" + mm + "-" + yy;
+    
+    let hours = t.getHours();
+    let minutes = String(t.getMinutes()).padStart(2, '0');
+    document.getElementById("nativeTime").value = String(hours).padStart(2, '0') + ":" + minutes;
+    
+    const sessionSelect = document.getElementById("session");
+    if (hours >= 12) {
+        sessionSelect.value = "பிற்பகல்";
+        if (hours > 12) hours = hours - 12;
+    } else {
+        sessionSelect.value = "முற்பகல்";
+        if (hours === 0) hours = 12;
+    }
+    
+    let displayHours = String(hours).padStart(2, '0');
+    document.getElementById("timeDisplay").value = displayHours + ":" + minutes;
+}
+
+window.onload = function() {
+    setCurrentDateTime();
+    syncDesignation();
+}
+</script>
+</body>
+</html>
